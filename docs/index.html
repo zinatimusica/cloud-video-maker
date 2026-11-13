@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Video Studio</title>
+  <style>
+    :root {
+      --bg: #080b12; --card: #121725; --border: #232d45;
+      --text: #f8fafc; --muted: #94a3b8; --accent: #6366f1;
+      --green: #a3e635; --yellow: #facc15; --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px 12px 70px; }
+    .wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    h1 { font-size: 1.4rem; font-weight: 900; }
+    .sub { color: var(--muted); font-size: 0.84rem; margin-top: 2px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .title-row { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.94rem; }
+    label { display: block; font-size: 0.74rem; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; background: #0a0e18; border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px; font-size: 0.9rem; font-family: inherit; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .preset-btn { background: #0a0e18; border: 1.5px solid var(--border); color: var(--text); padding: 10px; border-radius: 12px; text-align: left; cursor: pointer; }
+    .preset-btn.active { border-color: var(--green); background: rgba(163, 230, 53, 0.1); }
+    .scene-card { background: #0a0e18; border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .scene-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .mini-btns { display: flex; gap: 6px; }
+    .mini-btn { background: #1e293b; color: #fff; border: none; border-radius: 6px; padding: 5px 9px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+    .mini-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .btn-add { background: #1e293b; color: #fff; border: 1px dashed var(--border); padding: 11px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+    .btn-main { width: 100%; background: var(--accent); color: #fff; border: none; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 900; cursor: pointer; }
+    .btn-alt { width: 100%; background: #1e293b; color: #e2e8f0; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+    .btn-dl { display: block; text-align: center; text-decoration: none; background: var(--green); color: #052e16; padding: 14px; border-radius: 12px; font-weight: 900; }
+    .status { background: #0a0e18; border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-size: 0.85rem; display: none; flex-direction: column; gap: 8px; }
+    .status.show { display: flex; }
+    .hidden { display: none; }
+    .link { color: #818cf8; font-size: 0.76rem; cursor: pointer; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <h1>Modular Video Studio</h1>
+      <div class="sub">Pick a style preset, add/remove any scene, and render 1080p MP4s</div>
+    </div>
+
+    <!-- Step 1: Quick Presets -->
+    <div class="card">
+      <div class="title-row"><span>1. Style Presets</span></div>
+      <div class="presets">
+        <button class="preset-btn active" onclick="loadPreset('rivl', this)">
+          <div style="font-weight:800;font-size:0.86rem;">Guys Math (RIVL Ad)</div>
+          <div style="font-size:0.72rem;color:var(--muted);">8-scene cartoon + phone UI</div>
+        </button>
+        <button class="preset-btn" onclick="loadPreset('app', this)">
+          <div style="font-weight:800;font-size:0.86rem;">App / SaaS Ad</div>
+          <div style="font-size:0.72rem;color:var(--muted);">Hook + Demo + Chart + CTA</div>
+        </button>
+        <button class="preset-btn" onclick="loadPreset('story', this)">
+          <div style="font-weight:800;font-size:0.86rem;">Story &amp; Pop Captions</div>
+          <div style="font-size:0.72rem;color:var(--muted);">Viral kinetic reel</div>
+        </button>
+        <button class="preset-btn" onclick="loadPreset('flow', this)">
+          <div style="font-weight:800;font-size:0.86rem;">Google Flow + Captions</div>
+          <div style="font-size:0.72rem;color:var(--muted);">Overlay AI video URL</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Global Look -->
+    <div class="card">
+      <div class="title-row"><span>2. Look &amp; Captions</span></div>
+      <div class="row">
+        <div>
+          <label>Top Banner Text</label>
+          <input id="topBadge" value="GUYS MATH:" />
+        </div>
+        <div>
+          <label>Caption Style</label>
+          <select id="captionStyle">
+            <option value="classic">Classic Outlined</option>
+            <option value="pop">Pop Word-by-Word</option>
+            <option value="none">No Captions</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Hoodie / Brand Color</label>
+          <select id="hoodieColor">
+            <option value="#a3e635">Neon Green</option>
+            <option value="#ef4444">Red</option>
+            <option value="#3b82f6">Blue</option>
+            <option value="#a855f7">Purple</option>
+          </select>
+        </div>
+        <div>
+          <label>Banner Color</label>
+          <select id="accentColor">
+            <option value="#facc15">Yellow</option>
+            <option value="#22d3ee">Cyan</option>
+            <option value="#a3e635">Neon Green</option>
+            <option value="#ffffff">White</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Modular Scene Builder -->
+    <div class="card">
+      <div class="title-row">
+        <span>3. Scenes (<span id="sceneCount">0</span>)</span>
+      </div>
+      <div id="scenesList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <button class="btn-add" onclick="addScene()">+ Add Scene</button>
+    </div>
+
+    <!-- Step 4: Render Actions -->
+    <div class="card">
+      <div class="title-row">
+        <span>4. Render MP4</span>
+        <span class="link" onclick="document.getElementById('tokenBox').classList.toggle('hidden')">1-Tap Token Setup</span>
+      </div>
+      <div id="tokenBox" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="row">
+          <div><label>Owner (auto-detected)</label><input id="owner" /></div>
+          <div><label>Repo (auto-detected)</label><input id="repo" /></div>
+        </div>
+        <div>
+          <label>Optional 1-Tap Token (<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" style="color:#818cf8;">Create here</a>: Actions Read &amp; Write)</label>
+          <input id="token" type="password" placeholder="github_pat_... (leave blank to use Zero-Token mode)" />
+        </div>
+      </div>
+
+      <button class="btn-main" id="renderBtn" onclick="runOneTap()">1-Tap Generate MP4 (Uses Token)</button>
+      <button class="btn-alt" onclick="copyAndOpen()">Zero-Token Mode: Copy Config &amp; Open GitHub</button>
+
+      <div class="status" id="statusBox">
+        <div id="statusText">Starting...</div>
+        <a id="dlLink" class="btn-dl hidden" target="_blank" rel="noopener">Download video.mp4</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCENE_TYPES = [
+      ['cafe_menu', 'Cafe Menu Rejection'],
+      ['gym_reject', 'Gym Rejection'],
+      ['couch_hook', 'Couch + Notification Hook'],
+      ['phone_game', 'Phone Gameplay + Time'],
+      ['imessage_chat', 'iMessage Chat Bubbles'],
+      ['win_confetti', 'Win Screen + Confetti'],
+      ['morning_sleep', 'Morning Twist (Sleeping)'],
+      ['brand_cta', 'Brand CTA Outro'],
+      ['kinetic_text', 'Kinetic Big Text'],
+      ['bar_chart', 'Animated Bar Chart'],
+      ['flow_media', 'Google Flow Clip/Image'],
+    ];
+
+    const PRESETS = {
+      rivl: {
+        topBadge: 'GUYS MATH:',
+        captionStyle: 'classic',
+        hoodieColor: '#a3e635',
+        accentColor: '#facc15',
+        scenes: [
+          { type: 'cafe_menu', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Six dollars for a coffee? Nah, too expensive.', subtitle: '6 dollars for a coffee? Nah, too expensive.', item1: 'latte|$5.50', item2: 'COFFEE|$6.00', item3: 'cookie|$4.00' },
+          { type: 'gym_reject', voice: 'en-US-AndrewMultilingualNeural', spoken: 'One hour at the gym? No time.', subtitle: '1 hour at the gym? No time.' },
+          { type: 'couch_hook', voice: 'en-US-GuyNeural', spoken: "Bet you can't beat me at hoops.", subtitle: "bet you can't beat me at hoops", sender: 'Jake' },
+          { type: 'phone_game', voice: 'en-US-AndrewMultilingualNeural', spoken: "Just one more game. It's free by the way.", subtitle: 'just one more game...', gameTitle: 'Hoops Duel', scoreLeft: '9', scoreRight: '2', timeLabel: '1:07 AM', tired: true },
+          { type: 'imessage_chat', voice: 'en-US-AndrewMultilingualNeural', spoken: 'One v one. Now.', subtitle: '1v1. now.', sender: 'Jake', msg1: "bet u can't beat me 😂", msg2: '1v1. now.', msg3: 'rematch?? 😰', msg4: 'same time tomorrow 😏' },
+          { type: 'win_confetti', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Four nothing, obviously.', subtitle: '4-0. obviously.', bigScore: '4 - 0', subText: '12/14 made • 9 swishes' },
+          { type: 'morning_sleep', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Slept zero hours. Worth it.', subtitle: 'slept 0 hours. worth it.' },
+          { type: 'brand_cta', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Rival one v one skill games. Free to play. Link in bio.', subtitle: "think you'd beat me? 👀", brandName: 'RIVL', tagline: '1v1 skill games', pillText: 'FREE to play', ctaText: 'link in bio ↗' },
+        ],
+      },
+      app: {
+        topBadge: 'STOP SCROLLING:',
+        captionStyle: 'pop',
+        hoodieColor: '#3b82f6',
+        accentColor: '#22d3ee',
+        scenes: [
+          { type: 'kinetic_text', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Still editing videos manually for three hours?', subtitle: 'STILL EDITING MANUALLY?' },
+          { type: 'bar_chart', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Creators using automation posted four times faster.', subtitle: '4x Faster Output', chartData: 'Wk1:15, Wk2:38, Wk3:80, Wk4:140' },
+          { type: 'brand_cta', voice: 'en-US-AvaNeural', spoken: 'Try it free today. Link in bio.', subtitle: 'Start in 60 seconds', brandName: 'APP', tagline: 'Smart Video Studio', pillText: 'FREE to start', ctaText: 'link in bio ↗' },
+        ],
+      },
+      story: {
+        topBadge: 'REAL TALK:',
+        captionStyle: 'pop',
+        hoodieColor: '#a855f7',
+        accentColor: '#facc15',
+        scenes: [
+          { type: 'kinetic_text', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Nobody tells you how fast one habit changes everything.', subtitle: 'ONE HABIT CHANGES EVERYTHING' },
+          { type: 'couch_hook', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Start tonight instead of waiting for Monday.', subtitle: 'Start tonight.', sender: 'Reminder' },
+          { type: 'win_confetti', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Thirty days later, you will thank yourself.', subtitle: '30 DAYS LATER', bigScore: '30/30', subText: 'Streak unlocked' },
+        ],
+      },
+      flow: {
+        topBadge: 'WAIT FOR IT:',
+        captionStyle: 'pop',
+        hoodieColor: '#ef4444',
+        accentColor: '#facc15',
+        scenes: [
+          { type: 'flow_media', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Paste your Google Flow video link below to overlay crisp voice and captions!', subtitle: 'Google Flow + Captions', mediaUrl: '' },
+          { type: 'brand_cta', voice: 'en-US-AndrewMultilingualNeural', spoken: 'Follow for more!', subtitle: 'Follow for daily drops', brandName: 'YOURS', tagline: 'Daily Shorts', pillText: 'NEW VIDEO', ctaText: 'follow now ↗' },
+        ],
+      },
+    };
+
+    let scenes = [];
+
+    // Auto-detect owner & repo from GitHub Pages URL
+    const hostParts = location.hostname.split('.');
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const detectedOwner = hostParts[1] === 'github' ? hostParts[0] : '';
+    const detectedRepo = pathParts[0] || 'cloud-video-maker';
+    document.getElementById('owner').value = localStorage.getItem('cvm_owner') || detectedOwner;
+    document.getElementById('repo').value = localStorage.getItem('cvm_repo') || detectedRepo;
+    document.getElementById('token').value = localStorage.getItem('cvm_token') || '';
+    ['owner', 'repo', 'token'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        localStorage.setItem('cvm_' + id, e.target.value.trim());
+      });
+    });
+
+    function loadPreset(key, btn) {
+      document.querySelectorAll('.preset-btn').forEach((b) => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const p = PRESETS[key];
+      document.getElementById('topBadge').value = p.topBadge;
+      document.getElementById('captionStyle').value = p.captionStyle;
+      document.getElementById('hoodieColor').value = p.hoodieColor;
+      document.getElementById('accentColor').value = p.accentColor;
+      scenes = JSON.parse(JSON.stringify(p.scenes));
+      renderScenes();
+    }
+
+    function addScene() {
+      scenes.push({ type: 'kinetic_text', voice: 'en-US-AndrewMultilingualNeural', spoken: 'New scene text here', subtitle: 'New scene text here' });
+      renderScenes();
+    }
+
+    function removeScene(i) {
+      scenes.splice(i, 1);
+      renderScenes();
+    }
+
+    function moveScene(i, dir) {
+      const j = i + dir;
+      if (j < 0 || j >= scenes.length) return;
+      [scenes[i], scenes[j]] = [scenes[j], scenes[i]];
+      renderScenes();
+    }
+
+    function updateField(i, key, val) {
+      scenes[i][key] = val;
+      if (key === 'type') renderScenes();
+    }
+
+    function renderScenes() {
+      document.getElementById('sceneCount').textContent = scenes.length;
+      const root = document.getElementById('scenesList');
+      root.innerHTML = '';
+      scenes.forEach((sc, i) => {
+        const div = document.createElement('div');
+        div.className = 'scene-card';
+        const typeOpts = SCENE_TYPES.map(
+          ([v, l]) => `<option value="${v}" ${sc.type === v ? 'selected' : ''}>${l}</option>`
+        ).join('');
+        const extraFields =
+          sc.type === 'cafe_menu'
+            ? `<div class="row"><div><label>Item 2 (Name|Price)</label><input value="${sc.item2 || 'COFFEE|$6.00'}" oninput="updateField(${i},'item2',this.value)"></div><div><label>Item 1 (Name|Price)</label><input value="${sc.item1 || 'latte|$5.50'}" oninput="updateField(${i},'item1',this.value)"></div></div>`
+            : sc.type === 'phone_game'
+            ? `<div class="row"><div><label>Game Title</label><input value="${sc.gameTitle || 'Hoops Duel'}" oninput="updateField(${i},'gameTitle',this.value)"></div><div><label>Time Badge</label><input value="${sc.timeLabel || '1:07 AM'}" oninput="updateField(${i},'timeLabel',this.value)"></div></div>`
+            : sc.type === 'imessage_chat'
+            ? `<div class="row"><div><label>Incoming Msg</label><input value="${sc.msg1 || ''}" oninput="updateField(${i},'msg1',this.value)"></div><div><label>Your Reply</label><input value="${sc.msg2 || ''}" oninput="updateField(${i},'msg2',this.value)"></div></div>`
+            : sc.type === 'win_confetti'
+            ? `<div class="row"><div><label>Big Score</label><input value="${sc.bigScore || '4 - 0'}" oninput="updateField(${i},'bigScore',this.value)"></div><div><label>Subtext</label><input value="${sc.subText || ''}" oninput="updateField(${i},'subText',this.value)"></div></div>`
+            : sc.type === 'brand_cta'
+            ? `<div class="row"><div><label>Brand Name</label><input value="${sc.brandName || 'RIVL'}" oninput="updateField(${i},'brandName',this.value)"></div><div><label>Button Text</label><input value="${sc.ctaText || 'link in bio ↗'}" oninput="updateField(${i},'ctaText',this.value)"></div></div>`
+            : sc.type === 'bar_chart'
+            ? `<div><label>Chart Data (Label:Value)</label><input value="${sc.chartData || 'Jan:20, Feb:48, Mar:85, Apr:140'}" oninput="updateField(${i},'chartData',this.value)"></div>`
+            : sc.type === 'flow_media'
+            ? `<div><label>Google Flow MP4 / Image URL</label><input value="${sc.mediaUrl || ''}" oninput="updateField(${i},'mediaUrl',this.value)"></div>`
+            : '';
+
+        div.innerHTML = `
+          <div class="scene-head">
+            <strong style="font-size:0.84rem;color:var(--green);">Scene ${i + 1}</strong>
+            <div class="mini-btns">
+              <button class="mini-btn" onclick="moveScene(${i},-1)">▲</button>
+              <button class="mini-btn" onclick="moveScene(${i},1)">▼</button>
+              <button class="mini-btn del" onclick="removeScene(${i})">✕</button>
+            </div>
+          </div>
+          <div class="row">
+            <div><label>Scene Type</label><select onchange="updateField(${i},'type',this.value)">${typeOpts}</select></div>
+            <div><label>Voice</label>
+              <select onchange="updateField(${i},'voice',this.value)">
+                <option value="en-US-AndrewMultilingualNeural" ${sc.voice==='en-US-AndrewMultilingualNeural'?'selected':''}>Main Guy</option>
+                <option value="en-US-GuyNeural" ${sc.voice==='en-US-GuyNeural'?'selected':''}>Friend (Guy)</option>
+                <option value="en-US-AvaNeural" ${sc.voice==='en-US-AvaNeural'?'selected':''}>Female (Ava)</option>
+                <option value="en-GB-RyanNeural" ${sc.voice==='en-GB-RyanNeural'?'selected':''}>UK Male</option>
+                <option value="none" ${sc.voice==='none'?'selected':''}>Silent</option>
+              </select>
+            </div>
+          </div>
+          <div><label>Spoken Line &amp; Caption</label><input value="${(sc.spoken || '').replace(/"/g, '&quot;')}" oninput="updateField(${i},'spoken',this.value);updateField(${i},'subtitle',this.value)"></div>
+          ${extraFields}
+        `;
+        root.appendChild(div);
+      });
+    }
+
+    function buildConfig() {
+      return {
+        topBadge: document.getElementById('topBadge').value,
+        captionStyle: document.getElementById('captionStyle').value,
+        hoodieColor: document.getElementById('hoodieColor').value,
+        accentColor: document.getElementById('accentColor').value,
+        scenes,
+      };
+    }
+
+    async function copyAndOpen() {
+      const owner = document.getElementById('owner').value.trim();
+      const repo = document.getElementById('repo').value.trim();
+      const json = JSON.stringify(buildConfig());
+      try { await navigator.clipboard.writeText(json); } catch (_) {}
+      alert('Video config copied! On the GitHub page that opens, tap Run workflow, paste into configJson, and tap Run.');
+      window.open(`https://github.com/${owner}/${repo}/actions/workflows/render-video.yml`, '_blank');
+    }
+
+    async function runOneTap() {
+      const owner = document.getElementById('owner').value.trim();
+      const repo = document.getElementById('repo').value.trim();
+      const token = document.getElementById('token').value.trim();
+      if (!token) {
+        document.getElementById('tokenBox').classList.remove('hidden');
+        alert('Add a 1-time token above, OR tap "Zero-Token Mode" right below it!');
+        return;
+      }
+
+      const btn = document.getElementById('renderBtn');
+      const box = document.getElementById('statusBox');
+      const txt = document.getElementById('statusText');
+      const dl = document.getElementById('dlLink');
+      btn.disabled = true;
+      box.classList.add('show');
+      dl.classList.add('hidden');
+      txt.textContent = 'Sending scenes to cloud renderer...';
+
+      const headers = {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      };
+
+      try {
+        const t0 = Date.now() - 15000;
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/render-video.yml/dispatches`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ ref: 'main', inputs: { configJson: JSON.stringify(buildConfig()) } }),
+        });
+        if (!res.ok) throw new Error(`GitHub ${res.status}: ${await res.text()}`);
+
+        txt.textContent = 'Queued! Generating voices & 1080p frames (~60s)...';
+        let runId = null;
+        let runUrl = '';
+        for (let i = 0; i < 15 && !runId; i++) {
+          await new Promise((r) => setTimeout(r, 2500));
+          const rRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/render-video.yml/runs?event=workflow_dispatch&per_page=5`, { headers });
+          const data = await rRes.json();
+          const m = (data.workflow_runs || []).find((r) => new Date(r.created_at).getTime() >= t0);
+          if (m) { runId = m.id; runUrl = m.html_url; }
+        }
+        if (!runId) {
+          txt.textContent = 'Started! Open Actions in ~1 min to grab video.mp4.';
+          dl.href = `https://github.com/${owner}/${repo}/actions`;
+          dl.classList.remove('hidden');
+          return;
+        }
+        while (true) {
+          await new Promise((r) => setTimeout(r, 4000));
+          const cRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${runId}`, { headers });
+          const run = await cRes.json();
+          if (run.status === 'completed') {
+            txt.textContent = run.conclusion === 'success'
+              ? 'Finished! Tap below → scroll to Artifacts → tap video.mp4!'
+              : `Ended with: ${run.conclusion}. Tap to inspect log.`;
+            dl.href = runUrl;
+            dl.textContent = run.conclusion === 'success' ? 'Open & Download video.mp4' : 'View Log';
+            dl.classList.remove('hidden');
+            break;
+          } else {
+            txt.textContent = `Rendering (${run.status.replace('_', ' ')})...`;
+          }
+        }
+      } catch (e) {
+        txt.textContent = 'Error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    loadPreset('rivl');
+  </script>
+</body>
+</html>
