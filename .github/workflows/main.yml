@@ -1,0 +1,84 @@
+name: Render MP4 Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      template:
+        description: 'Choose Video Style'
+        type: choice
+        required: true
+        default: 'GuysMathSkit'
+        options:
+          - GuysMathSkit
+          - KineticPromo
+          - FlowOverlay
+      topBadge:
+        description: 'Top Banner Text'
+        type: string
+        required: true
+        default: 'GUYS MATH:'
+      line1:
+        description: 'Line 1'
+        type: string
+        required: true
+        default: 'Twenty bucks for a shirt? Nah, too expensive.'
+      line2:
+        description: 'Line 2'
+        type: string
+        required: true
+        default: 'Four hundred thousand for this car? Easy.'
+      line3:
+        description: 'Line 3 (Punchline)'
+        type: string
+        required: true
+        default: 'Sold the house. Worth it.'
+      stampWord:
+        description: 'Big Stamp Word'
+        type: string
+        required: true
+        default: 'SOLD'
+      accentColor:
+        description: 'Banner Color (Hex)'
+        type: string
+        required: true
+        default: '#facc15'
+      mediaUrl:
+        description: 'Optional MP4/Image URL (for FlowOverlay)'
+        type: string
+        required: false
+        default: ''
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Ensure Remotion Browser
+        run: npx remotion browser ensure
+
+      - name: Write inputs to JSON
+        env:
+          WORKFLOW_INPUT: ${{ toJson(github.event.inputs) }}
+        run: node -e "require('fs').writeFileSync('input-props.json', process.env.WORKFLOW_INPUT || '{}')"
+
+      - name: Render MP4 Video
+        run: |
+          mkdir -p out
+          npx remotion render src/index.ts "${{ github.event.inputs.template }}" out/video.mp4 --props=./input-props.json --codec=h264
+
+      - name: Upload MP4 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-video-mp4
+          path: out/video.mp4
+          retention-days: 7
