@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Pocket Cloud Video Studio</title>
+  <style>
+    :root {
+      --bg: #080b12;
+      --card: #121725;
+      --border: #232d45;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #6366f1;
+      --green: #10b981;
+      --yellow: #facc15;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 18px 14px 60px;
+      line-height: 1.45;
+    }
+    .wrap { max-width: 540px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    header { padding: 8px 4px; }
+    h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 0.86rem; margin-top: 4px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-title { font-size: 0.95rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    label { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
+    input, select, textarea {
+      width: 100%;
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 0.94rem;
+      font-family: inherit;
+    }
+    textarea { min-height: 82px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .styles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .style-btn {
+      background: #0b0f19;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .style-btn.active { border-color: var(--yellow); background: rgba(250, 204, 21, 0.1); }
+    .style-name { font-weight: 800; font-size: 0.85rem; }
+    .style-desc { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .btn-primary {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-primary:disabled { opacity: 0.55; }
+    .btn-download {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      background: var(--green);
+      color: #022c22;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 0.96rem;
+    }
+    .status-box {
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.86rem;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .status-box.show { display: flex; }
+    .hidden { display: none; }
+    .tiny-link { color: #818cf8; font-size: 0.76rem; cursor: pointer; text-decoration: underline; }
+    .hint { font-size: 0.74rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Cloud Video Studio</h1>
+      <div class="sub">Voiceover + Auto-Captions + 1080p MP4 straight from your phone</div>
+    </header>
+
+    <!-- GitHub Connection -->
+    <div class="card">
+      <div class="card-title">
+        <span>1. GitHub Connection</span>
+        <span class="tiny-link" onclick="toggleConn()">Show / Hide</span>
+      </div>
+      <div id="connFields">
+        <div class="row">
+          <div>
+            <label>GitHub Username</label>
+            <input id="owner" placeholder="your-username" />
+          </div>
+          <div>
+            <label>Repo Name</label>
+            <input id="repo" value="cloud-video-maker" />
+          </div>
+        </div>
+        <div style="margin-top: 10px;">
+          <label>Fine-Grained GitHub Token (saved on phone only)</label>
+          <input id="token" type="password" placeholder="github_pat_..." />
+          <div class="hint" style="margin-top: 5px;">Needs only <b>Actions: Read &amp; Write</b> on this repo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Style Picker -->
+    <div class="card">
+      <div class="card-title"><span>2. Pick Video Style</span></div>
+      <div class="styles-grid">
+        <button class="style-btn active" onclick="pickStyle('GuysMathSkit', this)">
+          <div class="style-name">Guys Math Skit</div>
+          <div class="style-desc">Cartoon + $ burst + SOLD</div>
+        </button>
+        <button class="style-btn" onclick="pickStyle('StoryCaptions', this)">
+          <div class="style-name">Story &amp; Captions</div>
+          <div class="style-desc">Word-by-word pop reel</div>
+        </button>
+        <button class="style-btn" onclick="pickStyle('KineticPromo', this)">
+          <div class="style-name">Kinetic Text</div>
+          <div class="style-desc">Beat-synced bold promo</div>
+        </button>
+        <button class="style-btn" onclick="pickStyle('ChartExplainer', this)">
+          <div class="style-name">Data Chart</div>
+          <div class="style-desc">Animated bar explainer</div>
+        </button>
+        <button class="style-btn" style="grid-column: span 2;" onclick="pickStyle('FlowOverlay', this)">
+          <div class="style-name">Google Flow Video + Captions</div>
+          <div class="style-desc">Layer voiceover &amp; captions over your Flow clip/image URL</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Script, Voice & Captions -->
+    <div class="card">
+      <div class="card-title"><span>3. Script, Voice &amp; Captions</span></div>
+      <div class="row">
+        <div>
+          <label>Top Banner</label>
+          <input id="topBadge" value="GUYS MATH:" />
+        </div>
+        <div>
+          <label>Banner Color</label>
+          <select id="accentColor">
+            <option value="#facc15">Yellow (#facc15)</option>
+            <option value="#22d3ee">Cyan (#22d3ee)</option>
+            <option value="#34d399">Green (#34d399)</option>
+            <option value="#f43f5e">Red/Pink (#f43f5e)</option>
+            <option value="#ffffff">White (#ffffff)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>AI Voiceover</label>
+          <select id="voice">
+            <option value="en-US-GuyNeural">US Male (Guy)</option>
+            <option value="en-US-AndrewMultilingualNeural">US Male (Andrew)</option>
+            <option value="en-US-AvaNeural">US Female (Ava)</option>
+            <option value="en-GB-RyanNeural">UK Male (Ryan)</option>
+            <option value="none">No Voiceover (Silent)</option>
+          </select>
+        </div>
+        <div>
+          <label>Caption Style</label>
+          <select id="captionStyle">
+            <option value="pop">Pop Word-by-Word</option>
+            <option value="classic">Classic Subtitle</option>
+            <option value="none">No Captions</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label>Full Voiceover Script (optional — overrides lines 1–3 for voice &amp; pop captions)</label>
+        <textarea id="voiceoverScript" placeholder="Leave blank to read Lines 1–3 automatically, or paste a longer story/script here..."></textarea>
+      </div>
+
+      <div>
+        <label>Line 1 (Opening)</label>
+        <input id="line1" value="Twenty bucks for a shirt? Nah, too expensive." />
+      </div>
+      <div>
+        <label>Line 2 (Middle)</label>
+        <input id="line2" value="Four hundred thousand for this car? Easy." />
+      </div>
+      <div class="row">
+        <div>
+          <label>Line 3 (Punchline)</label>
+          <input id="line3" value="Sold the house. Worth it." />
+        </div>
+        <div>
+          <label>Stamp Word</label>
+          <input id="stampWord" value="SOLD" />
+        </div>
+      </div>
+
+      <div id="chartBox" class="hidden">
+        <label>Chart Numbers (Label:Value separated by commas)</label>
+        <input id="chartData" value="Jan:20, Feb:45, Mar:82, Apr:140" />
+      </div>
+
+      <div id="mediaBox" class="hidden">
+        <label>Direct MP4 or Image URL (for Google Flow Overlay)</label>
+        <input id="mediaUrl" placeholder="https://.../clip.mp4 or .jpg" />
+      </div>
+    </div>
+
+    <button class="btn-primary" id="renderBtn" onclick="startRender()">Generate MP4 Video</button>
+
+    <div class="status-box" id="statusBox">
+      <div id="statusText">Starting cloud render...</div>
+      <a id="runLink" class="btn-download hidden" target="_blank" rel="noopener">Open &amp; Download video.mp4</a>
+    </div>
+  </div>
+
+  <script>
+    let selectedTemplate = 'GuysMathSkit';
+
+    // Load saved connection info
+    ['owner', 'repo', 'token'].forEach((id) => {
+      const saved = localStorage.getItem('cvm_' + id);
+      if (saved) document.getElementById(id).value = saved;
+      document.getElementById(id).addEventListener('input', (e) => {
+        localStorage.setItem('cvm_' + id, e.target.value.trim());
+      });
+    });
+
+    if (localStorage.getItem('cvm_token') && localStorage.getItem('cvm_owner')) {
+      document.getElementById('connFields').classList.add('hidden');
+    }
+
+    function toggleConn() {
+      document.getElementById('connFields').classList.toggle('hidden');
+    }
+
+    function pickStyle(name, btn) {
+      selectedTemplate = name;
+      document.querySelectorAll('.style-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('chartBox').classList.toggle('hidden', name !== 'ChartExplainer');
+      document.getElementById('mediaBox').classList.toggle('hidden', name !== 'FlowOverlay');
+    }
+
+    async function startRender() {
+      const owner = document.getElementById('owner').value.trim();
+      const repo = document.getElementById('repo').value.trim();
+      const token = document.getElementById('token').value.trim();
+
+      if (!owner || !repo || !token) {
+        document.getElementById('connFields').classList.remove('hidden');
+        alert('Please enter your GitHub username, repo name, and token first.');
+        return;
+      }
+
+      const btn = document.getElementById('renderBtn');
+      const box = document.getElementById('statusBox');
+      const txt = document.getElementById('statusText');
+      const link = document.getElementById('runLink');
+
+      btn.disabled = true;
+      box.classList.add('show');
+      link.classList.add('hidden');
+      txt.textContent = 'Sending job to cloud renderer...';
+
+      const config = {
+        template: selectedTemplate,
+        topBadge: document.getElementById('topBadge').value,
+        accentColor: document.getElementById('accentColor').value,
+        voice: document.getElementById('voice').value,
+        voiceRate: '+8%',
+        captionStyle: document.getElementById('captionStyle').value,
+        voiceoverScript: document.getElementById('voiceoverScript').value,
+        line1: document.getElementById('line1').value,
+        line2: document.getElementById('line2').value,
+        line3: document.getElementById('line3').value,
+        stampWord: document.getElementById('stampWord').value,
+        chartData: document.getElementById('chartData').value,
+        mediaUrl: document.getElementById('mediaUrl').value,
+      };
+
+      const headers = {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      };
+
+      try {
+        const triggerTime = Date.now() - 15000;
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/actions/workflows/render-video.yml/dispatches`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              ref: 'main',
+              inputs: {
+                template: selectedTemplate,
+                configJson: JSON.stringify(config),
+              },
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(`GitHub Error (${res.status}): ${err}`);
+        }
+
+        txt.textContent = 'Job queued! Waiting for cloud runner...';
+        let runId = null;
+        let runUrl = '';
+
+        // Poll until we detect the new run
+        for (let attempt = 0; attempt < 15 && !runId; attempt++) {
+          await new Promise((r) => setTimeout(r, 2500));
+          const runsRes = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/actions/workflows/render-video.yml/runs?event=workflow_dispatch&per_page=5`,
+            { headers }
+          );
+          const data = await runsRes.json();
+          const match = (data.workflow_runs || []).find(
+            (r) => new Date(r.created_at).getTime() >= triggerTime
+          );
+          if (match) {
+            runId = match.id;
+            runUrl = match.html_url;
+          }
+        }
+
+        if (!runId) {
+          txt.textContent = 'Render started! Check your Actions tab in ~1 minute.';
+          link.href = `https://github.com/${owner}/${repo}/actions`;
+          link.textContent = 'Open GitHub Actions';
+          link.classList.remove('hidden');
+          btn.disabled = false;
+          return;
+        }
+
+        // Poll run completion
+        while (true) {
+          await new Promise((r) => setTimeout(r, 4000));
+          const check = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/actions/runs/${runId}`,
+            { headers }
+          );
+          const run = await check.json();
+          if (run.status === 'completed') {
+            if (run.conclusion === 'success') {
+              txt.textContent = 'Done! Tap below and scroll to Artifacts → video.mp4 to download.';
+              link.href = runUrl;
+              link.textContent = 'Download video.mp4';
+              link.classList.remove('hidden');
+            } else {
+              txt.textContent = `Render ended with status: ${run.conclusion}. Tap below to view log.`;
+              link.href = runUrl;
+              link.textContent = 'View Error Log';
+              link.classList.remove('hidden');
+            }
+            break;
+          } else {
+            txt.textContent = `Rendering in cloud (${run.status.replace('_', ' ')})...`;
+          }
+        }
+      } catch (e) {
+        txt.textContent = 'Error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
